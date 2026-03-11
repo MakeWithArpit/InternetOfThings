@@ -1,0 +1,6 @@
+WiFi
+PubSubClient
+Wire
+Adafruit SGP30
+Adafruit SSD1306
+DHT sensor library
