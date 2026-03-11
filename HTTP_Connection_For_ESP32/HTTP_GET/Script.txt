@@ -1,0 +1,18 @@
+function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
+
+  // Read data from cells (outward data to ESP32)
+  var temp = sheet.getRange("A1").getValue();
+  var hum = sheet.getRange("B1").getValue();
+  var status = sheet.getRange("C1").getValue();
+
+  var data = {
+    temperature: temp,
+    humidity: hum,
+    status: status
+  };
+
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}

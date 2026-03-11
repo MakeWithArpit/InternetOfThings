@@ -1,0 +1,20 @@
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
+    
+    // Read POSTed JSON
+    var data = JSON.parse(e.postData.contents);
+    var d1 = data.data1;
+    var d2 = data.data2;
+    var d3 = data.data3;
+
+    // Write to cells (from ESP32 to Sheet)
+    sheet.getRange("A2").setValue(d1);
+    sheet.getRange("B2").setValue(d2);
+    sheet.getRange("C2").setValue(d3);
+
+    return ContentService.createTextOutput("Data written successfully!");
+  } catch (error) {
+    return ContentService.createTextOutput("Error: " + error);
+  }
+}
