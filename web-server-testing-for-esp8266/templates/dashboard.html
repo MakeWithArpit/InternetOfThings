@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sensor Data Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body { background-color: #f2f6fa; }
+    .container { margin-top: 40px; }
+    h1 { color: #007bff; margin-bottom: 30px; }
+    .alerts li { margin-bottom: 8px; }
+    .table thead { background-color: #007bff; color: #fff; }
+  </style>
+  <meta http-equiv="refresh" content="5" />
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center">ESP8266 Sensor Data Dashboard</h1>
+
+    {% if data %}
+      <h4>Sensor Parameters</h4>
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover table-striped">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for key, value in data.items() %}
+              {% if not key.endswith('_alert') and key != 'overload_status' %}
+                <tr>
+                  <td>{{ key.replace('_', ' ').capitalize() }}</td>
+                  <td>{{ value }}</td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Alerts & Status</h4>
+      <ul class="list-group alerts">
+        {% if data.battery_alert %}
+          <li class="list-group-item list-group-item-warning">Battery Alert: {{ data.battery_alert }}</li>
+        {% endif %}
+        {% if data.solar_alert %}
+          <li class="list-group-item list-group-item-warning">Solar Alert: {{ data.solar_alert }}</li>
+        {% endif %}
+        {% if data.sunlight_alert %}
+          <li class="list-group-item list-group-item-danger">Sunlight Alert: {{ data.sunlight_alert }}</li>
+        {% endif %}
+        {% if data.charging_alert %}
+          <li class="list-group-item list-group-item-danger">Charging Alert: {{ data.charging_alert }}</li>
+        {% endif %}
+        {% if data.overload_status %}
+          <li class="list-group-item list-group-item-info">Load Status: {{ data.overload_status }}</li>
+        {% endif %}
+      </ul>
+    {% else %}
+      <p class="text-center text-muted">No sensor data available yet.</p>
+    {% endif %}
+  </div>
+</body>
+</html>
