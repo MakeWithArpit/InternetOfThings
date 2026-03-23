@@ -1,75 +1,151 @@
 # ESP32 IoT Soil Moisture Monitor
 
-ESP32-based IoT project for monitoring soil moisture, temperature, and humidity with real-time data display on an LCD and RGB LED indication. The project sends sensor data to ThingsBoard cloud using MQTT protocol for remote monitoring.
+An ESP32-based IoT system for monitoring soil moisture, temperature, and humidity in real time. Sensor readings are displayed on a 16x2 I2C LCD, indicated visually via RGB LEDs, and published to ThingsBoard Cloud over MQTT for remote monitoring and logging.
+
+---
 
 ## Features
 
-- Measures soil moisture with analog sensor.
-- Reads temperature and humidity with DHT11 sensor.
-- Displays data and soil condition on 16x2 LCD (I2C).
-- RGB LED shows soil moisture status: Red (Dry), Blue (Medium), Green (Wet).
-- Connects to WiFi and publishes data to ThingsBoard via MQTT.
-- Real-time cloud monitoring and logging.
+- Reads soil moisture percentage from an analog soil moisture sensor
+- Reads temperature and humidity from a DHT11 sensor
+- Displays soil condition, temperature, and humidity on a 16x2 I2C LCD
+- RGB LED indicates soil moisture status — Red (Dry), Blue (Medium), Green (Wet)
+- Publishes all sensor data to ThingsBoard via MQTT over WiFi
+- Serial monitor output for debugging and local observation
+
+---
 
 ## Hardware Requirements
 
-- ESP32 development board
-- Analog Soil Moisture Sensor
-- DHT11 temperature and humidity sensor
-- 16x2 I2C LCD display
-- RGB LED with current limiting resistors
-- Jumper wires and breadboard
+| Component | Specification |
+|-----------|--------------|
+| Microcontroller | ESP32 Development Board |
+| Soil Moisture Sensor | Analog type (resistive/capacitive) |
+| Temperature & Humidity Sensor | DHT11 |
+| Display | 16x2 I2C LCD (address `0x27`) |
+| Indicators | RGB LED with current-limiting resistors |
+| Miscellaneous | Jumper wires, breadboard |
+
+---
 
 ## Wiring
 
-| Component         | ESP32 Pin       |
-|-------------------|-----------------|
-| Soil Moisture (SIG) | GPIO 34       |
-| DHT11 Data          | GPIO 4        |
-| LCD SDA             | GPIO 21       |
-| LCD SCL             | GPIO 22       |
-| RGB Red             | GPIO 25       |
-| RGB Green           | GPIO 26       |
-| RGB Blue            | GPIO 27       |
+| Component | ESP32 Pin |
+|-----------|-----------|
+| Soil Moisture Signal (SIG) | GPIO 34 |
+| DHT11 Data | GPIO 4 |
+| LCD SDA | GPIO 21 |
+| LCD SCL | GPIO 22 |
+| RGB Red | GPIO 25 |
+| RGB Green | GPIO 26 |
+| RGB Blue | GPIO 27 |
+
+Refer to `Images/Schematic.png` for the complete circuit diagram.
+
+---
+
+## Software Requirements
+
+- Arduino IDE 1.8 or higher
+- ESP32 board package installed in Arduino IDE
+
+### Required Libraries
+
+| Library | Purpose |
+|---------|---------|
+| DHT sensor library (Adafruit) | DHT11 temperature and humidity readings |
+| LiquidCrystal_I2C | I2C LCD communication |
+| ArduinoJson | JSON serialization for MQTT payload |
+| PubSubClient | MQTT client for ThingsBoard |
+| Wire | I2C communication |
+
+---
 
 ## Setup Instructions
 
-1. Clone the repository.
-2. Install Arduino libraries:
-   - `DHT sensor library` by Adafruit
-   - `LiquidCrystal_I2C`
-   - `ArduinoJson`
-   - `PubSubClient`
-3. Update your WiFi SSID and password in the code.
-4. Update ThingsBoard MQTT token in the code.
-5. Upload the code to ESP32 using Arduino IDE.
+1. Wire all components as per the wiring table.
+2. Open `code.ino` in Arduino IDE.
+3. Update the following values in the code:
+
+```cpp
+const char* ssid     = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASSWORD";
+const char* token    = "YOUR_THINGSBOARD_DEVICE_TOKEN";
+```
+
+4. Optionally adjust calibration thresholds for your soil sensor:
+
+```cpp
+#define SOIL_DRY_THRESHOLD    3000
+#define SOIL_MEDIUM_THRESHOLD 1500
+```
+
+5. Install all required libraries via **Sketch > Include Library > Manage Libraries**.
+6. Select board **ESP32 Dev Module** and the correct COM port under **Tools**.
+7. Upload the code to the ESP32.
+
+---
 
 ## Usage
 
-- After powering the ESP32, it connects to the WiFi and ThingsBoard server.
-- Sensor data is read every 2 seconds.
-- Data is published to ThingsBoard MQTT topic for remote monitoring.
-- LCD displays soil moisture, condition, temperature, and humidity.
-- RGB LED color represents soil moisture status.
+After powering the board:
 
-## MQTT Topic
+- The ESP32 connects to WiFi and then to the ThingsBoard MQTT server.
+- Sensor readings are taken every 2 seconds.
+- The LCD alternates between displaying soil moisture with condition, and temperature with humidity.
+- RGB LED reflects moisture condition:
 
-- Publish topic: `v1/devices/me/telemetry`
+| LED Color | Soil Condition | Raw ADC Value |
+|-----------|---------------|---------------|
+| Red | Dry | > 3000 |
+| Blue | Medium | 1500 – 3000 |
+| Green | Wet | < 1500 |
 
-## Customization
+- Data is published to ThingsBoard on topic `v1/devices/me/telemetry`.
 
-- Adjust `SOIL_DRY_THRESHOLD` and `SOIL_MEDIUM_THRESHOLD` constants to calibrate soil moisture condition levels.
-- Change I2C address for LCD if needed.
+---
+
+## MQTT Payload Example
+
+```json
+{
+  "soil_moisture": 2100,
+  "soil_percent": 49,
+  "temperature": 27,
+  "humidity": 62
+}
+```
+
+---
+
+## ThingsBoard Dashboard
+
+Log in to [ThingsBoard](https://demo.thingsboard.io) and create a dashboard to visualize soil moisture trends, temperature, and humidity over time.
+
+Refer to `Images/Dashboard.PNG` for a sample dashboard layout.
+
+---
 
 ## Troubleshooting
 
-- Verify WiFi credentials and network availability.
-- Check MQTT token and server settings.
-- Confirm sensor wiring and functionality.
-- Serial monitor provides debug info.
+| Issue | Resolution |
+|-------|-----------|
+| LCD not displaying | Verify I2C address (default `0x27`); check SDA/SCL connections |
+| DHT11 reads NaN | Confirm sensor is connected to GPIO 4 and is properly powered |
+| Soil sensor reads constant 0 or 4095 | Sensor may not be inserted correctly; check analog pin connection |
+| MQTT connection fails | Verify ThingsBoard token, server, and WiFi credentials |
+| WiFi not connecting | Ensure 2.4 GHz network; double-check SSID and password |
+
+---
+
+## License
+
+This project is licensed under the **MIT License**.
+
+---
 
 ## Author
 
-ARPIT GANGWAR  
-
-
+**Arpit Gangwar**  
+B.Tech Computer Science and Engineering  
+Invertis University, Bareilly
