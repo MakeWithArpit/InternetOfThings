@@ -1,57 +1,144 @@
-# IoT AQI Monitoring System for Indoor Farming
+# AQI Monitoring System for Indoor Farming
 
-## Overview
+An IoT-based Air Quality Index (AQI) monitoring system designed for indoor farming environments. The system uses an ESP32 microcontroller with multiple sensors to measure temperature, humidity, TVOC (Total Volatile Organic Compounds), and eCO2 (equivalent CO2). Data is displayed locally on an OLED screen, indicated visually via RGB LEDs, and transmitted to ThingsBoard Cloud over MQTT for remote monitoring.
 
-This project is an IoT-based Air Quality Index (AQI) Monitoring System designed for indoor farming. It uses an ESP32 microcontroller with sensors to measure air quality, temperature, and humidity and sends data to ThingsBoard Cloud via MQTT. The system also displays readings on an OLED screen and uses RGB LEDs as status indicators.
+---
 
 ## Features
 
-- Measures Temperature, Humidity, TVOC, and eCO2
-- Sends telemetry data to ThingsBoard Cloud over MQTT
-- Local OLED display for real-time monitoring
-- RGB LED indicators for different air quality levels
+- Measures temperature and humidity using the DHT11 sensor
+- Measures TVOC and eCO2 levels using the Adafruit SGP30 sensor
+- Real-time data display on a 128x32 SSD1306 OLED screen
+- RGB LED color indicators for different air quality levels (Good, Moderate, Poor)
+- Publishes telemetry data to ThingsBoard Cloud over MQTT
+- Automatic WiFi and MQTT reconnection on disconnect
 
-## Hardware
+---
 
-- ESP32 Development Board  
-- DHT11 Sensor (Temperature & Humidity)  
-- Adafruit SGP30 Sensor (TVOC & eCO2)  
-- Adafruit SSD1306 OLED Display (128x32)  
-- RGB LEDs (Red, Green, Blue)  
-- Jumper wires and breadboard  
+## Hardware Requirements
 
-## Software Requirements
+| Component | Specification |
+|-----------|--------------|
+| Microcontroller | ESP32 Development Board |
+| Temperature & Humidity Sensor | DHT11 |
+| Air Quality Sensor | Adafruit SGP30 (TVOC & eCO2) |
+| Display | Adafruit SSD1306 OLED 128x32 (I2C) |
+| Indicators | RGB LED (Red, Green, Blue) |
+| Miscellaneous | Jumper wires, breadboard |
 
-- Arduino IDE (v1.8 or higher)  
-- Libraries:  
-  - WiFi  
-  - PubSubClient  
-  - Wire  
-  - Adafruit_SGP30  
-  - Adafruit_SSD1306  
-  - DHT sensor library  
-
-Refer to `libraries.txt` for exact library versions.
+---
 
 ## Wiring Diagram
 
-See the `images/Schematic_diagram.png` file for the complete hardware connection layout.
+Refer to `images/Schematic.png` for the complete hardware connection layout.
+
+| Component | ESP32 Pin |
+|-----------|-----------|
+| DHT11 Data | GPIO 5 |
+| SGP30 SDA | GPIO 21 |
+| SGP30 SCL | GPIO 22 |
+| OLED SDA | GPIO 21 |
+| OLED SCL | GPIO 22 |
+| RGB Red | GPIO 13 |
+| RGB Blue | GPIO 12 |
+| RGB Green | GPIO 11 |
+
+---
+
+## Software Requirements
+
+- Arduino IDE 1.8 or higher
+- ESP32 board package installed in Arduino IDE
+
+### Required Libraries
+
+| Library | Purpose |
+|---------|---------|
+| WiFi | WiFi connectivity |
+| PubSubClient | MQTT communication |
+| Wire | I2C communication |
+| Adafruit SGP30 | SGP30 sensor driver |
+| Adafruit SSD1306 | OLED display driver |
+| DHT sensor library | DHT11 sensor driver |
+
+Refer to `libraries.txt` for exact library versions used during development.
+
+---
 
 ## Setup Instructions
 
-1. Connect the hardware as per the wiring diagram.  
-2. Open the `IndoorAQI.ino` sketch in Arduino IDE.  
-3. Update the WiFi SSID, password, MQTT server address, and ThingsBoard device token in the code.  
-4. Install the required libraries.  
-5. Upload the sketch to your ESP32 board.  
-6. Power the device; it will connect to WiFi and ThingsBoard automatically.
+1. Connect the hardware as per the wiring table and schematic diagram.
+2. Open `IndoorAQI.ino` in Arduino IDE.
+3. Update the following constants in the code:
 
-## Usage Example
+```cpp
+const char* ssid     = "YOUR_WIFI_SSID";
+const char* pass     = "YOUR_WIFI_PASSWORD";
+const char* mqtt_server = "demo.thingsboard.io";
+const char* token    = "YOUR_THINGSBOARD_DEVICE_TOKEN";
+```
 
-Once running, the device will:  
-- Read sensor values every 2 seconds.  
-- Display temperature, humidity, TVOC, and eCO2 on the OLED screen.  
-- RGB LEDs change color based on air quality levels (green, blue, red).  
-- Send JSON telemetry data to ThingsBoard MQTT topic `v1/devices/me/telemetry`.  
+4. Install all required libraries via **Sketch > Include Library > Manage Libraries**.
+5. Select the correct board (**ESP32 Dev Module**) and COM port under **Tools**.
+6. Upload the sketch to the ESP32.
 
-Example of sent JSON payload:  
+---
+
+## Usage
+
+Once powered and connected:
+
+- Sensor values are read every 2 seconds.
+- The OLED screen cycles through Temperature, Humidity, TVOC, and eCO2 readings.
+- RGB LED changes color based on air quality:
+
+| LED Color | Air Quality Level | eCO2 Range (ppm) | TVOC Range (ppb) |
+|-----------|------------------|------------------|------------------|
+| Green | Good | 400 – 1000 | 0 – 250 |
+| Blue | Moderate | 1001 – 1500 | 251 – 650 |
+| Red | Poor | 1501 – 2100 | 651 – 5000 |
+
+- JSON telemetry is published to ThingsBoard on topic `v1/devices/me/telemetry`:
+
+```json
+{
+  "temperature": 28.5,
+  "humidity": 65.0,
+  "TVOC": 120,
+  "ECO2": 850
+}
+```
+
+---
+
+## ThingsBoard Dashboard
+
+Log in to [ThingsBoard](https://demo.thingsboard.io) and configure a dashboard to visualize the incoming telemetry data using charts, gauges, or value cards.
+
+Refer to `images/Dashboard.PNG` for a sample dashboard layout.
+
+---
+
+## Troubleshooting
+
+| Issue | Resolution |
+|-------|-----------|
+| OLED not displaying | Check I2C address (default `0x3C`); verify SDA/SCL connections |
+| DHT sensor shows NaN | Ensure DHT11 is connected to the correct GPIO and is properly powered |
+| SGP30 readings always zero | Allow 15–30 seconds for sensor warm-up after power-on |
+| MQTT connection fails | Verify the ThingsBoard token, server address, and WiFi credentials |
+| WiFi not connecting | Confirm SSID and password; ensure 2.4 GHz network is used |
+
+---
+
+## License
+
+This project is licensed under the **MIT License**.
+
+---
+
+## Author
+
+**Arpit Gangwar**  
+B.Tech Computer Science and Engineering  
+Invertis University, Bareilly
