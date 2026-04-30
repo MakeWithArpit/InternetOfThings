@@ -51,460 +51,124 @@ const char HTML_PAGE[] PROGMEM = R"rawliteral(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Device Setup</title>
+<title>Wi-Fi Setup</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
-
-  :root {
-    --bg:        #0d0f12;
-    --surface:   #161a20;
-    --surface2:  #1e242d;
-    --border:    #2a3140;
-    --accent:    #4f8ef7;
-    --accent2:   #7eb8f7;
-    --success:   #3ecf8e;
-    --error:     #f75a5a;
-    --text:      #e8eaf0;
-    --muted:     #6b7585;
-    --radius:    14px;
-    --shadow:    0 24px 64px rgba(0,0,0,0.5);
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background-image:
-      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(79,142,247,0.08) 0%, transparent 70%);
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 22px;
-    padding: 36px 32px 32px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: var(--shadow);
-    animation: slideUp 0.4s cubic-bezier(0.22,1,0.36,1);
-  }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ── Header ── */
-  .header { text-align: center; margin-bottom: 28px; }
-
-  .icon-wrap {
-    width: 56px; height: 56px;
-    background: linear-gradient(135deg, rgba(79,142,247,0.15), rgba(79,142,247,0.05));
-    border: 1px solid rgba(79,142,247,0.25);
-    border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 16px;
-  }
-
-  .icon-wrap svg { width: 26px; height: 26px; stroke: var(--accent); }
-
-  h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.3px; }
-  .subtitle { font-size: 0.82rem; color: var(--muted); margin-top: 5px; line-height: 1.5; }
-
-  /* ── Divider ── */
-  .divider { height: 1px; background: var(--border); margin: 20px 0; }
-
-  /* ── Label ── */
-  label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--muted);
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    margin-bottom: 7px;
-  }
-
-  /* ── Network Selector ── */
-  .field { margin-bottom: 16px; }
-
-  .select-wrap { position: relative; }
-
-  select {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    padding: 12px 38px 12px 14px;
-    appearance: none;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    outline: none;
-  }
-
-  select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,142,247,0.12); }
-
-  .select-arrow {
-    position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
-    pointer-events: none; color: var(--muted);
-  }
-
-  /* ── Text Input ── */
-  .input-wrap { position: relative; }
-
-  input[type="text"], input[type="password"] {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.88rem;
-    padding: 12px 40px 12px 14px;
-    transition: border-color 0.2s;
-    outline: none;
-    letter-spacing: 0.5px;
-  }
-
-  input::placeholder { color: var(--muted); font-family: 'DM Sans', sans-serif; letter-spacing: 0; }
-  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,142,247,0.12); }
-
-  .toggle-pass {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer; color: var(--muted);
-    padding: 4px; display: flex; align-items: center;
-    transition: color 0.2s;
-  }
-  .toggle-pass:hover { color: var(--text); }
-  .toggle-pass svg { width: 17px; height: 17px; }
-
-  /* ── Scan Button ── */
-  .scan-btn {
-    display: flex; align-items: center; gap: 6px;
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.78rem;
-    padding: 5px 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 8px;
-  }
-  .scan-btn:hover { border-color: var(--accent); color: var(--accent2); }
-  .scan-btn svg { width: 13px; height: 13px; }
-  .scan-btn.spinning svg { animation: spin 1s linear infinite; }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── Manual SSID Toggle ── */
-  .manual-toggle {
-    font-size: 0.75rem; color: var(--muted); cursor: pointer;
-    text-decoration: underline; text-underline-offset: 3px;
-    background: none; border: none; font-family: 'DM Sans', sans-serif;
-    margin-top: 8px; display: block;
-  }
-  .manual-toggle:hover { color: var(--accent2); }
-
-  .hidden { display: none !important; }
-
-  /* ── Submit Button ── */
-  .btn {
-    width: 100%;
-    padding: 13px;
-    background: var(--accent);
-    border: none;
-    border-radius: var(--radius);
-    color: #fff;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: opacity 0.2s, transform 0.15s;
-    position: relative;
-    overflow: hidden;
-    letter-spacing: -0.1px;
-  }
-  .btn:hover { opacity: 0.88; }
-  .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-  .btn .spinner {
-    display: none;
-    width: 18px; height: 18px;
-    border: 2.5px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto;
-  }
-  .btn.loading .btn-text { display: none; }
-  .btn.loading .spinner { display: block; }
-
-  /* ── Status Banner ── */
-  .status {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-size: 0.82rem;
-    margin-top: 14px;
-    font-weight: 500;
-    line-height: 1.4;
-  }
-  .status.show { display: flex; }
-  .status.success { background: rgba(62,207,142,0.1); border: 1px solid rgba(62,207,142,0.25); color: var(--success); }
-  .status.error   { background: rgba(247,90,90,0.1);  border: 1px solid rgba(247,90,90,0.25);  color: var(--error); }
-  .status.info    { background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.25); color: var(--accent2); }
-  .status svg { flex-shrink: 0; width: 16px; height: 16px; }
-
-  /* ── Signal Strength Icon in dropdown ── */
-  .signal-0::before { content: "▁▂▃▄ "; color: var(--muted); font-size: 0.7em; }
-  .signal-1::before { content: "▁▂▃▄ "; color: var(--error); font-size: 0.7em; }
-  .signal-2::before { content: "▁▂▃▄ "; color: #f7a44f; font-size: 0.7em; }
-  .signal-3::before { content: "▁▂▃▄ "; color: var(--success); font-size: 0.7em; }
-
-  /* ── Footer ── */
-  .footer {
-    text-align: center;
-    font-size: 0.72rem;
-    color: var(--muted);
-    margin-top: 22px;
-    letter-spacing: 0.2px;
-  }
+:root{--bg:#0f0f0f;--card:#181818;--inp:#212121;--bd:#2c2c2c;--ac:#3b82f6;--tx:#f0f0f0;--mt:#666;--ok:#22c55e;--er:#ef4444;--r:10px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:30px 26px;width:100%;max-width:360px}
+.logo{width:42px;height:42px;border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.logo svg{width:20px;height:20px;stroke:var(--ac)}
+h1{font-size:1.1rem;font-weight:600;text-align:center;letter-spacing:-0.3px}
+.sub{font-size:0.78rem;color:var(--mt);text-align:center;margin-top:4px}
+hr{border:none;border-top:1px solid var(--bd);margin:18px 0}
+label{display:block;font-size:0.68rem;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
+.field{margin-bottom:13px}
+.rel{position:relative}
+select,input{width:100%;background:var(--inp);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:inherit;font-size:0.875rem;padding:10px 13px;outline:none;transition:border-color 0.15s;appearance:none}
+select{padding-right:34px;cursor:pointer}
+select:focus,input:focus{border-color:var(--ac)}
+input::placeholder{color:var(--mt)}
+input[type=password],input[type=text]{padding-right:38px}
+.arr{position:absolute;right:11px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mt);font-size:0.55rem}
+.eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--mt);display:flex;align-items:center;transition:color 0.15s}
+.eye:hover{color:var(--tx)}
+.eye svg{width:15px;height:15px}
+.row{margin-top:7px;display:flex;gap:7px}
+.ghost{font-size:0.73rem;color:var(--mt);background:none;border:1px solid var(--bd);border-radius:7px;padding:5px 10px;cursor:pointer;font-family:inherit;transition:all 0.15s;display:flex;align-items:center;gap:5px}
+.ghost:hover{border-color:var(--ac);color:var(--ac)}
+.ghost svg{width:11px;height:11px}
+.ghost.spin svg{animation:sp 1s linear infinite}
+.lnk{font-size:0.73rem;color:var(--mt);background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:2px;margin-top:7px;display:block;transition:color 0.15s}
+.lnk:hover{color:var(--ac)}
+.btn{width:100%;padding:11px;background:var(--ac);border:none;border-radius:var(--r);color:#fff;font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;margin-top:5px;transition:opacity 0.15s,transform 0.1s}
+.btn:hover{opacity:0.85}
+.btn:active{transform:scale(0.98)}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.spr{display:none;width:15px;height:15px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:sp 0.7s linear infinite;margin:0 auto}
+.btn.ld .bt{display:none}
+.btn.ld .spr{display:block}
+.msg{display:none;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:8px;font-size:0.78rem;margin-top:11px;line-height:1.4}
+.msg.show{display:flex}
+.msg.ok{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.18);color:var(--ok)}
+.msg.er{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.18);color:var(--er)}
+.msg.inf{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.18);color:var(--ac)}
+.msg svg{flex-shrink:0;width:14px;height:14px;margin-top:1px}
+.footer{font-size:0.68rem;color:var(--mt);text-align:center;margin-top:14px}
+.hidden{display:none!important}
+@keyframes sp{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 <div class="card">
-
-  <!-- Header -->
-  <div class="header">
-    <div class="icon-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-        <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-        <circle cx="12" cy="20" r="1" fill="currentColor"/>
-      </svg>
-    </div>
-    <h1>Wi-Fi Setup</h1>
-    <p class="subtitle">Connect your device to your home<br>or office network</p>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+      <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+      <circle cx="12" cy="20" r="1" fill="currentColor"/>
+    </svg>
   </div>
-
-  <div class="divider"></div>
-
-  <!-- Network Field -->
+  <h1>Wi-Fi Setup</h1>
+  <p class="sub">Connect your device to a network</p>
+  <hr>
   <div class="field">
     <label>Network</label>
-
-    <!-- Dropdown mode -->
-    <div id="dropdownWrap">
-      <div class="select-wrap">
-        <select id="ssidSelect" onchange="onSelectChange()">
-          <option value="">Scanning networks...</option>
+    <div id="dw">
+      <div class="rel">
+        <select id="sel" onchange="onSel()">
+          <option value="">Scanning...</option>
         </select>
-        <span class="select-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-            <path d="M6 9l6 6 6-6"/>
-          </svg>
-        </span>
+        <span class="arr">&#9660;</span>
       </div>
-      <button class="scan-btn" id="scanBtn" onclick="scanNetworks()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
-          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-        </svg>
-        Refresh list
-      </button>
-      <button class="manual-toggle" onclick="toggleManual()">Enter network name manually →</button>
+      <div class="row">
+        <button class="ghost" id="sb" onclick="doScan()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+      <button class="lnk" onclick="sw(true)">Enter name manually</button>
     </div>
-
-    <!-- Manual input mode -->
-    <div id="manualWrap" class="hidden">
-      <input type="text" id="ssidManual" placeholder="Network name (SSID)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
-      <button class="manual-toggle" onclick="toggleManual()">← Back to network list</button>
+    <div id="mw" class="hidden">
+      <input type="text" id="si" placeholder="Network name (SSID)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+      <button class="lnk" onclick="sw(false)">Back to list</button>
     </div>
   </div>
-
-  <!-- Password Field -->
   <div class="field">
     <label>Password</label>
-    <div class="input-wrap">
-      <input type="password" id="password" placeholder="Wi-Fi password" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
-      <button class="toggle-pass" type="button" onclick="togglePass()" title="Show/hide password">
-        <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <div class="rel">
+      <input type="password" id="pi" placeholder="Wi-Fi password" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+      <button class="eye" type="button" onclick="toggleEye()">
+        <svg id="ei" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
           <circle cx="12" cy="12" r="3"/>
         </svg>
       </button>
     </div>
   </div>
-
-  <!-- Submit -->
-  <button class="btn" id="connectBtn" onclick="connectWiFi()">
-    <span class="btn-text">Connect to Network</span>
-    <div class="spinner"></div>
+  <button class="btn" id="cb" onclick="doConnect()">
+    <span class="bt">Connect</span>
+    <div class="spr"></div>
   </button>
-
-  <!-- Status Message -->
-  <div class="status" id="statusBox">
-    <svg id="statusIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></svg>
-    <span id="statusText"></span>
+  <div class="msg" id="mb">
+    <svg id="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></svg>
+    <span id="mt"></span>
   </div>
-
 </div>
-
-<!-- Footer -->
-<div class="footer">Hold BOOT button 3 sec to reset Wi-Fi settings</div>
-
+<div class="footer">Hold BOOT button 3s to clear saved credentials</div>
 <script>
-  // ── State ──
-  let isManual = false;
-  let passVisible = false;
-
-  // ── On Load: Scan networks ──
-  window.addEventListener('load', () => { scanNetworks(); });
-
-  // ── Toggle manual SSID input ──
-  function toggleManual() {
-    isManual = !isManual;
-    document.getElementById('dropdownWrap').classList.toggle('hidden', isManual);
-    document.getElementById('manualWrap').classList.toggle('hidden', !isManual);
-    if (isManual) document.getElementById('ssidManual').focus();
-  }
-
-  // ── Toggle password visibility ──
-  function togglePass() {
-    passVisible = !passVisible;
-    const inp = document.getElementById('password');
-    inp.type = passVisible ? 'text' : 'password';
-    document.getElementById('eyeIcon').innerHTML = passVisible
-      ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
-      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-  }
-
-  // ── Dropdown change ──
-  function onSelectChange() {
-    const val = document.getElementById('ssidSelect').value;
-    if (val === '__manual__') { toggleManual(); }
-  }
-
-  // ── Scan Wi-Fi Networks ──
-  function scanNetworks() {
-    const btn = document.getElementById('scanBtn');
-    const sel = document.getElementById('ssidSelect');
-
-    btn.classList.add('spinning');
-    btn.disabled = true;
-    sel.innerHTML = '<option value="">Scanning…</option>';
-
-    fetch('/scan')
-      .then(r => r.json())
-      .then(data => {
-        btn.classList.remove('spinning');
-        btn.disabled = false;
-
-        if (!data.networks || data.networks.length === 0) {
-          sel.innerHTML = '<option value="">No networks found</option>';
-          return;
-        }
-
-        sel.innerHTML = '<option value="">— Select a network —</option>';
-        data.networks.forEach(net => {
-          const opt = document.createElement('option');
-          opt.value = net.ssid;
-          opt.textContent = net.ssid + (net.encrypted ? ' 🔒' : '');
-          sel.appendChild(opt);
-        });
-        // Manual entry option
-        const m = document.createElement('option');
-        m.value = '__manual__';
-        m.textContent = '✏️  Enter manually…';
-        sel.appendChild(m);
-      })
-      .catch(() => {
-        btn.classList.remove('spinning');
-        btn.disabled = false;
-        sel.innerHTML = '<option value="">Scan failed. Retry?</option>';
-      });
-  }
-
-  // ── Get SSID from active input ──
-  function getSSID() {
-    return isManual
-      ? document.getElementById('ssidManual').value.trim()
-      : document.getElementById('ssidSelect').value.trim();
-  }
-
-  // ── Show Status Banner ──
-  function showStatus(type, iconPath, message) {
-    const box  = document.getElementById('statusBox');
-    const icon = document.getElementById('statusIcon');
-    const text = document.getElementById('statusText');
-    box.className = 'status show ' + type;
-    icon.innerHTML = iconPath;
-    text.textContent = message;
-  }
-
-  // ── Connect ──
-  function connectWiFi() {
-    const ssid = getSSID();
-    const pass = document.getElementById('password').value;
-    const btn  = document.getElementById('connectBtn');
-
-    if (!ssid) {
-      showStatus('error',
-        '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
-        'Please select or enter a network name.');
-      return;
-    }
-
-    btn.classList.add('loading');
-    btn.disabled = true;
-    showStatus('info',
-      '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
-      'Saving credentials… Device will restart shortly.');
-
-    const params = new URLSearchParams({ ssid, password: pass });
-
-    fetch('/save', { method: 'POST', body: params, headers: { 'Content-Type': 'application/x-www-form-urlencoded' }})
-      .then(r => r.json())
-      .then(data => {
-        btn.classList.remove('loading');
-        if (data.ok) {
-          showStatus('success',
-            '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
-            'Saved! Device is restarting and connecting to "' + ssid + '". You can close this page.');
-          btn.disabled = true;
-        } else {
-          showStatus('error',
-            '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
-            data.message || 'Something went wrong. Please try again.');
-          btn.disabled = false;
-        }
-      })
-      .catch(() => {
-        btn.classList.remove('loading');
-        // Device likely restarted already — treat as success
-        showStatus('success',
-          '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
-          'Credentials sent! Device is restarting. Please wait…');
-        btn.disabled = true;
-      });
-  }
+var manual=false,showPw=false;
+window.onload=doScan;
+function sw(m){manual=m;document.getElementById('dw').classList.toggle('hidden',m);document.getElementById('mw').classList.toggle('hidden',!m);if(m)document.getElementById('si').focus();}
+function toggleEye(){showPw=!showPw;var i=document.getElementById('pi');i.type=showPw?'text':'password';document.getElementById('ei').innerHTML=showPw?'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>':'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';}
+function onSel(){if(document.getElementById('sel').value==='__m__')sw(true);}
+function doScan(){var b=document.getElementById('sb'),s=document.getElementById('sel');b.classList.add('spin');b.disabled=true;s.innerHTML='<option value="">Scanning...</option>';fetch('/scan').then(function(r){return r.json();}).then(function(d){b.classList.remove('spin');b.disabled=false;if(!d.networks||!d.networks.length){s.innerHTML='<option value="">No networks found</option>';return;}s.innerHTML='<option value="">Select a network</option>';d.networks.forEach(function(n){var o=document.createElement('option');o.value=n.ssid;o.textContent=n.ssid+(n.encrypted?' [Secured]':'');s.appendChild(o);});var m=document.createElement('option');m.value='__m__';m.textContent='Enter manually';s.appendChild(m);}).catch(function(){b.classList.remove('spin');b.disabled=false;s.innerHTML='<option value="">Scan failed. Retry?</option>';});}
+function ssid(){return manual?document.getElementById('si').value.trim():document.getElementById('sel').value.trim();}
+function showMsg(t,ic,txt){document.getElementById('mi').innerHTML=ic;document.getElementById('mt').textContent=txt;document.getElementById('mb').className='msg show '+t;}
+function doConnect(){var s=ssid(),p=document.getElementById('pi').value,b=document.getElementById('cb');if(!s){showMsg('er','<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>','Select or enter a network name.');return;}b.classList.add('ld');b.disabled=true;showMsg('inf','<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/>','Saving... Device will restart shortly.');var q=new URLSearchParams({ssid:s,password:p});fetch('/save',{method:'POST',body:q,headers:{'Content-Type':'application/x-www-form-urlencoded'}}).then(function(r){return r.json();}).then(function(d){b.classList.remove('ld');if(d.ok){showMsg('ok','<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>','Saved! Connecting to "'+s+'". You can close this page.');b.disabled=true;}else{showMsg('er','<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',d.message||'Something went wrong.');b.disabled=false;}}).catch(function(){b.classList.remove('ld');showMsg('ok','<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>','Credentials sent! Device is restarting.');b.disabled=true;});}
 </script>
 </body>
 </html>
@@ -743,16 +407,6 @@ void loop() {
     return;
   }
 
-  // ──────────────────────────────────────────
-  //   YOUR MAIN PRODUCT CODE GOES HERE
-  // ──────────────────────────────────────────
-  // Wi-Fi is connected and provisioning is done.
-  // Example:
-  //   readSensor();
-  //   publishMQTT();
-  //   delay(1000);
-
-  // Wi-Fi reconnect watchdog
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("[WiFi] Connection lost. Reconnecting…");
     setLED(false);
